@@ -16,10 +16,6 @@ import {
   FaTooth,
 } from "react-icons/fa";
 import LandingPage from "./components/LandingPage";
-import UserRegister from "./components/UserRegister";
-import DentistRegister from "./components/DentistRegister";
-import UserLogin from "./components/UserLogin";
-import DentistLogin from "./components/DentistLogin";
 import DentistList from "./components/DentistList";
 import CheckupResults from "./components/CheckupResults";
 import DentistDashboard from "./components/DentistDashboard";
@@ -28,24 +24,26 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [dentist, setDentist] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
-  const navigate = useNavigate(); // Use useNavigate instead of useHistory
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      axios.defaults.headers.common["x-auth-token"] = token;
-    }
+    // Simulate authenticated user
+    setUser({
+      id: "mock-user-id",
+      name: "Sriram Komma",
+      email: "sriram@example.com",
+    });
+    navigate("/user");
+
     const savedDarkMode = localStorage.getItem("darkMode") === "true";
     setDarkMode(savedDarkMode);
     document.documentElement.classList.toggle("dark", savedDarkMode);
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    delete axios.defaults.headers.common["x-auth-token"];
     setUser(null);
     setDentist(null);
-    navigate("/"); // Use navigate instead of history.push
+    navigate("/");
   };
 
   const toggleDarkMode = () => {
@@ -58,9 +56,10 @@ const App = () => {
   const handleRequestCheckup = async (dentistId) => {
     try {
       await axios.post("http://localhost:5001/api/users/checkup", {
+        userId: user.id,
         dentistId,
       });
-      alert("Checkup requested");
+      alert("Checkup requested successfully");
     } catch (err) {
       alert(err.response?.data.msg || "Error requesting checkup");
     }
@@ -140,16 +139,6 @@ const App = () => {
               </div>
             }
           />
-          <Route path="/user-register" element={<UserRegister />} />
-          <Route path="/dentist-register" element={<DentistRegister />} />
-          <Route
-            path="/user-login"
-            element={<UserLogin setUser={setUser} setDentist={setDentist} />}
-          />
-          <Route
-            path="/dentist-login"
-            element={<DentistLogin setDentist={setDentist} setUser={setUser} />}
-          />
           <Route
             path="/user"
             element={
@@ -163,11 +152,11 @@ const App = () => {
                 </>
               ) : (
                 <div className="text-center dark:text-white">
-                  <p>Please log in as a user to access this page.</p>
+                  <p>Please select a role to access this page.</p>
                   <button
-                    onClick={() => navigate("/user-login")}
+                    onClick={() => navigate("/")}
                     className="mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    Go to User Login
+                    Go to Home
                   </button>
                 </div>
               )
@@ -180,11 +169,11 @@ const App = () => {
                 <DentistDashboard dentistId={dentist.id} />
               ) : (
                 <div className="text-center dark:text-white">
-                  <p>Please log in as a dentist to access this page.</p>
+                  <p>Please select a role to access this page.</p>
                   <button
-                    onClick={() => navigate("/dentist-login")}
+                    onClick={() => navigate("/")}
                     className="mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    Go to Dentist Login
+                    Go to Home
                   </button>
                 </div>
               )
@@ -196,7 +185,6 @@ const App = () => {
   );
 };
 
-// Wrap App with Router
 const AppWithRouter = () => (
   <Router>
     <App />
